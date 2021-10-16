@@ -21,3 +21,4 @@ Route::get('/smallWorldTestHome', function () {
 });
 
 Route::post('loadDataFromExcel','\App\Http\Controllers\readCsv@loadDataFromExcel');
+Route::post('launchScoreRankingOperation','\App\Http\Controllers\readCsv@calculateTotalRanking');

@@ -18,4 +18,24 @@ $( document ).ready(function() {
             }
         });
     });
+
+    $( "#launchCalcutionButton" ).click(function() {
+        $.ajax({
+
+            'url' : 'launchScoreRankingOperation',
+            'type' : 'POST',
+            'data' : {
+                'numberOfWords' : 10
+            },
+            'success' : function(data) {
+                //overwrite write in html
+                $('#showInformationTextArea').html(JSON.parse(data));
+            },
+            'error' : function(request,error)
+            {
+                alert("Request: "+JSON.stringify(request));
+            }
+        });
+    });
+
 });
