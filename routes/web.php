@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/smallWorldTestHome', function () {
+    return view('smallWorldHome');
+});
+
+Route::post('loadDataFromExcel','\App\Http\Controllers\readCsv@loadDataFromExcel');
