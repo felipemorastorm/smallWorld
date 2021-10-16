@@ -7,9 +7,19 @@ Mid (M)	(Kills + Assists) / Deaths	0.03	0.01
 Jungle (J)	(Kills + Assists) / Deaths	0.02	0.02
 Support (S)	(Kills + Assists) / Deaths	0.01	0.03
 */
+/**
+ *
+ */
 const _damageDeal = array('T'=>0.03,'B'=>0.03,'M'=>0.03,'J'=>'0.02','S'=>0.01);
+/**
+ *
+ */
 const _healDeal   = array('T'=>0.01,'B'=>0.01,'M'=>0.01,'J'=>'0.02','S'=>0.03);
 
+/**
+ * Class dataGamePlayer
+ * @package App\Games
+ */
 class dataGamePlayer
 {
     /**
@@ -17,7 +27,21 @@ class dataGamePlayer
      */
     public $linePlayerGameData ;
 
-    public function setLinePlayerGameData($game,$player, $nick,$team,$winner,$position,$kills,$deaths,$assists,$damage,$heal){
+    /**
+     * @param $game
+     * @param $player
+     * @param $nick
+     * @param $team
+     * @param $winner
+     * @param $position
+     * @param $kills
+     * @param $deaths
+     * @param $assists
+     * @param $damage
+     * @param $heal
+     * constructor , set all params of class
+     */
+    public function setLinePlayerGameData($game, $player, $nick, $team, $winner, $position, $kills, $deaths, $assists, $damage, $heal){
         $this->linePlayerGameData['player']   = $player;
         $this->linePlayerGameData['nick']     = $nick;
         $this->linePlayerGameData['team']     = $team;
@@ -32,7 +56,16 @@ class dataGamePlayer
         $this->linePlayerGameData['score']     = null;
     }
 
-    public function setLinePlayerGameDataB($game,$player, $nick,$team,$kills,$deaths)
+    /**
+     * @param $game
+     * @param $player
+     * @param $nick
+     * @param $team
+     * @param $kills
+     * @param $deaths
+     * set the constructor if game have less params for second game
+     */
+    public function setLinePlayerGameDataB($game, $player, $nick, $team, $kills, $deaths)
     {
         $this->linePlayerGameData['player']   = $player;
         $this->linePlayerGameData['nick']     = $nick;
@@ -44,6 +77,11 @@ class dataGamePlayer
 
     }
 
+    /**
+     * @return mixed
+     * Calculate her score after constructor setted call saving her value into class value score himself
+     * distinction for score formule is done depend of game
+     */
     public function calculateScoreByGameAndPlayer()
         {
 
@@ -71,6 +109,9 @@ class dataGamePlayer
 
         }
 
+    /**
+     *
+     */
     public function getWinnerValorant(){
 
     }
