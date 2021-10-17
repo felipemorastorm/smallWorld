@@ -35,11 +35,12 @@ class readCsv extends Controller
         $displayInformation = '';
         foreach ($arrayGames as $key => $path) {
             $resultsGame = $this->readDataOneGame($path);
-            if ($resultsGame !== false) {
+
+            if (is_array($resultsGame )) {
                 $arrayResultGamesByLine[$key] = $resultsGame;
                 $displayInformation .= $key . ' read ok <br>';
             } else {
-                $displayInformation .= $key . ' fail <br>';
+                $displayInformation .= $key . ' fail by : '.$resultsGame.'<br>';
             }
 
         }
@@ -57,27 +58,90 @@ class readCsv extends Controller
 
     /**
      * @param $path the path to the csv file that have the score lines
-     * @return string the returned string is message callback to return to ui , with ok for each file readed or fail
-     *
+     * @return string if file not can be read or integrity deaths and kill failthe returned string is message callback to return to ui , with ok for each file readed or fail
+     * @return array with lines readed if all ok
      */
     public function readDataOneGame($path)
     {
         if (file_exists($path)) {
+            //integrity check for
             $file_handle = fopen($path, 'r');
             $iterationTitle = false;
+            $title = null;
+            $killsTeam = array();
+            $deathsTeam = array();
+
+            //read lines by lines and put contents in var contents for save later
+            //same time check and get values for kills number
+            //uac : As file validation, the Team A Kills should match the Team B Deaths, and vice versa.
+
             while (!feof($file_handle)) {
                 $lineReaded = fgetcsv($file_handle, 0, ';');
                 //do this for avoid parse data from first header line title of game
                 if ($iterationTitle !== false) {
+                    if ($title == 'LEAGUE OF LEGENDS') {
+                        //postion 2 for league of legends is team, kills and death 5 and 6
+                        if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
+                            if (isset($killsTeam[$lineReaded[2]])) {
+                                $killsTeam[$lineReaded[2]] += (int)$lineReaded[5];
+                                $deathsTeam[$lineReaded[2]] += (int)$lineReaded[6];
+                            } else {
+                                $killsTeam[$lineReaded[2]] = (int)$lineReaded[5];
+                                $deathsTeam[$lineReaded[2]] = (int)$lineReaded[6];
+                            }
+                        }
+                    }
+                    if ($title == 'VALORANT') {
+                        //postion 2 for valorant is team, format team position 7
+                        //player 1;nick1;Team A;10;2
+                        if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
+                            if (isset($killsTeam[$lineReaded[2]])) {
+                                //var_dump($lineReaded);die;
+                                $killsTeam[$lineReaded[2]] += (int)$lineReaded[4];
+                                $deathsTeam[$lineReaded[2]] += (int)$lineReaded[5];
+                            } else {
+                                $killsTeam[$lineReaded[2]] = (int)$lineReaded[4];
+                                $deathsTeam[$lineReaded[2]] = (int)$lineReaded[5];
+                            }
+
+                        }
+                    }
+
                     $contents[] = $lineReaded;
+
+
                 } else {
+                    $title = $lineReaded[0];
                     $iterationTitle = true;
                 }
             }
             fclose($file_handle);
-            return (($contents));
+
+            //check if matching kills with deaths
+            //kills team a match deaths team b
+            $integrityKillsDeath = true;
+
+            foreach ($killsTeam as $keyKills =>$valueKills) {
+
+                foreach ($deathsTeam as $keyDeaths => $valueDeaths){
+                    if($keyKills !=$keyDeaths){
+                        if($valueKills !==$valueDeaths){
+                            echo 'compare '.$title.'----'.$keyDeaths.' with '.$keyKills .'value = '.$valueKills.'-'.$valueDeaths.'\n';die;
+
+                            $integrityKillsDeath = false;
+                        }
+                    }
+                }
+            }
+            if($integrityKillsDeath===true) {
+                return $contents;
+            }else{
+                return ('integrity kills and death failed ');
+
+            }
+
         } else {
-            return ('path to file ' . $path . ' not exist \n');
+            return ('path to file ' . $path . ' not exist ');
         }
     }
 
