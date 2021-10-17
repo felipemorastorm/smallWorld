@@ -79,7 +79,9 @@ class readCsvTest extends TestCase
     public function testLoadDataFromExcel()
     {
         $readController = new readCsv();
-        $replyJson = (string) ($readController->loadDataFromExcel());
+        $replyJson = (string) ($readController->loadDataFromExcel(true));
         $this->assertStringNotContainsString('fail',$replyJson,'Error reading some file');
     }
+
+
 }

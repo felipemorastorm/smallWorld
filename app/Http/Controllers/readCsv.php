@@ -26,7 +26,7 @@ class readCsv extends Controller
         try {
             //here i put the path to the 2 files that i have , i assume what normally the process would push more files
             //then this would be done with  scandisk and read file by file
-            if (isset($_POST['valid']) && $_POST['valid'] == 1) {
+            if ( isset($_POST['valid']) && $_POST['valid'] == 1 ) {
                 $pathCsvLeagueOfLegend = resource_path('csvFiles/league_of_legends.csv');
                 $pathCsvValorant = resource_path('csvFiles/valorantGameOk.csv');
             } else {
@@ -83,43 +83,47 @@ class readCsv extends Controller
             //uac : As file validation, the Team A Kills should match the Team B Deaths, and vice versa.
 
             while (!feof($file_handle)) {
-                $lineReaded = fgetcsv($file_handle, 0, ';');
-                //do this for avoid parse data from first header line title of game
-                if ($iterationTitle !== false) {
-                    if ($title == 'LEAGUE OF LEGENDS') {
-                        //postion 2 for league of legends is team, kills and death 5 and 6
-                        if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
-                            if (isset($killsTeam[$lineReaded[2]])) {
-                                $killsTeam[$lineReaded[2]] += (int)$lineReaded[5];
-                                $deathsTeam[$lineReaded[2]] += (int)$lineReaded[6];
-                            } else {
-                                $killsTeam[$lineReaded[2]] = (int)$lineReaded[5];
-                                $deathsTeam[$lineReaded[2]] = (int)$lineReaded[6];
+                try {
+                    $lineReaded = fgetcsv($file_handle, 0, ';');
+                    //do this for avoid parse data from first header line title of game
+                    if ($iterationTitle !== false) {
+                        if ($title == 'LEAGUE OF LEGENDS') {
+                            //postion 2 for league of legends is team, kills and death 5 and 6
+                            if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
+                                if (isset($killsTeam[$lineReaded[2]])) {
+                                    $killsTeam[$lineReaded[2]] += (int)$lineReaded[5];
+                                    $deathsTeam[$lineReaded[2]] += (int)$lineReaded[6];
+                                } else {
+                                    $killsTeam[$lineReaded[2]] = (int)$lineReaded[5];
+                                    $deathsTeam[$lineReaded[2]] = (int)$lineReaded[6];
+                                }
                             }
                         }
-                    }
-                    if ($title == 'VALORANT') {
-                        //postion 2 for valorant is team, kills and death 4 and 5 in good format
-                        //player 1;nick1;Team A;10;2
-                        if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
-                            if (isset($killsTeam[$lineReaded[2]])) {
-                                $killsTeam[$lineReaded[2]] += (int)$lineReaded[4];
-                                $deathsTeam[$lineReaded[2]] += (int)$lineReaded[5];
-                            } else {
-                                $killsTeam[$lineReaded[2]] = (int)$lineReaded[4];
-                                $deathsTeam[$lineReaded[2]] = (int)$lineReaded[5];
+                        if ($title == 'VALORANT') {
+                            //postion 2 for valorant is team, kills and death 4 and 5 in good format
+                            //player 1;nick1;Team A;10;2
+                            if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
+                                if (isset($killsTeam[$lineReaded[2]])) {
+                                    $killsTeam[$lineReaded[2]] += (int)$lineReaded[4];
+                                    $deathsTeam[$lineReaded[2]] += (int)$lineReaded[5];
+                                } else {
+                                    $killsTeam[$lineReaded[2]] = (int)$lineReaded[4];
+                                    $deathsTeam[$lineReaded[2]] = (int)$lineReaded[5];
+                                }
+
                             }
-
                         }
-                    }
-                    if(is_array($lineReaded)) {
-                        $contents[] = $lineReaded;
-                    }
+                        if (is_array($lineReaded)) {
+                            $contents[] = $lineReaded;
+                        }
 
 
-                } else {
-                    $title = $lineReaded[0];
-                    $iterationTitle = true;
+                    } else {
+                        $title = $lineReaded[0];
+                        $iterationTitle = true;
+                    }
+                }catch (Exception $e){
+                    return $e->getMessage();
                 }
             }
             fclose($file_handle);
