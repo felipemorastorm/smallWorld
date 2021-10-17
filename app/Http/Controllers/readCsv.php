@@ -36,11 +36,11 @@ class readCsv extends Controller
         foreach ($arrayGames as $key => $path) {
             $resultsGame = $this->readDataOneGame($path);
 
-            if (is_array($resultsGame )) {
+            if (is_array($resultsGame)) {
                 $arrayResultGamesByLine[$key] = $resultsGame;
                 $displayInformation .= $key . ' read ok <br>';
             } else {
-                $displayInformation .= $key . ' fail by : '.$resultsGame.'<br>';
+                $displayInformation .= $key . ' fail by : ' . $resultsGame . '<br>';
             }
 
         }
@@ -92,11 +92,10 @@ class readCsv extends Controller
                         }
                     }
                     if ($title == 'VALORANT') {
-                        //postion 2 for valorant is team, format team position 7
+                        //postion 2 for valorant is team, kills and death 4 and 5 in good format
                         //player 1;nick1;Team A;10;2
                         if (isset($lineReaded[2]) && is_string($lineReaded[2])) {//avoid empty lines csv files
                             if (isset($killsTeam[$lineReaded[2]])) {
-                                //var_dump($lineReaded);die;
                                 $killsTeam[$lineReaded[2]] += (int)$lineReaded[4];
                                 $deathsTeam[$lineReaded[2]] += (int)$lineReaded[5];
                             } else {
@@ -106,8 +105,9 @@ class readCsv extends Controller
 
                         }
                     }
-
-                    $contents[] = $lineReaded;
+                    if(is_array($lineReaded)) {
+                        $contents[] = $lineReaded;
+                    }
 
 
                 } else {
@@ -121,21 +121,22 @@ class readCsv extends Controller
             //kills team a match deaths team b
             $integrityKillsDeath = true;
 
-            foreach ($killsTeam as $keyKills =>$valueKills) {
+            foreach ($killsTeam as $keyKills => $valueKills) {
 
-                foreach ($deathsTeam as $keyDeaths => $valueDeaths){
-                    if($keyKills !=$keyDeaths){
-                        if($valueKills !==$valueDeaths){
-                            echo 'compare '.$title.'----'.$keyDeaths.' with '.$keyKills .'value = '.$valueKills.'-'.$valueDeaths.'\n';die;
+                foreach ($deathsTeam as $keyDeaths => $valueDeaths) {
+                    if ($keyKills != $keyDeaths) {
+                        if ($valueKills !== $valueDeaths) {
+                            echo 'compare ' . $title . '----' . $keyDeaths . ' with ' . $keyKills . 'value = ' . $valueKills . '-' . $valueDeaths . '\n';
+                            die;
 
                             $integrityKillsDeath = false;
                         }
                     }
                 }
             }
-            if($integrityKillsDeath===true) {
+            if ($integrityKillsDeath === true) {
                 return $contents;
-            }else{
+            } else {
                 return ('integrity kills and death failed ');
 
             }
@@ -157,9 +158,6 @@ class readCsv extends Controller
         //data in cache are received in array of games
         foreach ($resultsGames as $keyGame => $game) {
 
-            if ($keyGame == 'valorant') {
-                //need add point in valorant to team winner ????
-            }
             foreach ($game as $keyPlayer => $playerLineScore) {
 
                 if ($keyGame == 'league') {
@@ -178,6 +176,7 @@ class readCsv extends Controller
                             $playerLineScore[7],
                             $playerLineScore[8],
                             $playerLineScore[9]);
+
                         $playersLeague[] = $newLinePlayerGameData->calculateScoreByGameAndPlayer();
 
                     }
@@ -185,13 +184,16 @@ class readCsv extends Controller
                 if ($keyGame == 'valorant') {
                     $newLinePlayerGameData = new dataGamePlayer();
                     if (is_array($playerLineScore)) {
+                        //$game, $player, $nick, $team,$winner, $kills, $deaths
                         $newLinePlayerGameData->setLinePlayerGameDataB(
                             $keyGame,
                             $playerLineScore[0],
                             $playerLineScore[1],
                             $playerLineScore[2],
                             $playerLineScore[3],
-                            $playerLineScore[4]);
+                            $playerLineScore[4],
+                            $playerLineScore[5]
+                        );
                         $playersValorant[] = $newLinePlayerGameData->calculateScoreByGameAndPlayer();
 
                     }

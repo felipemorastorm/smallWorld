@@ -54,13 +54,13 @@ class dataGamePlayer
             $this->linePlayerGameData['player'] = $player;
             $this->linePlayerGameData['nick'] = $nick;
             $this->linePlayerGameData['team'] = $team;
-            $this->linePlayerGameData['winner'] = $winner;
+            $this->linePlayerGameData['winner'] = (bool)$winner;
             $this->linePlayerGameData['position'] = $position;
             $this->linePlayerGameData['kills'] = $kills;
-            $this->linePlayerGameData['deaths'] = $deaths;
-            $this->linePlayerGameData['assists'] = $assists;
-            $this->linePlayerGameData['damage'] = $damage;
-            $this->linePlayerGameData['heal'] = $heal;
+            $this->linePlayerGameData['deaths'] = (int)$deaths;
+            $this->linePlayerGameData['assists'] = (int)$assists;
+            $this->linePlayerGameData['damage'] = (int)$damage;
+            $this->linePlayerGameData['heal'] = (int)$heal;
             $this->linePlayerGameData['game'] = $game;
             $this->linePlayerGameData['score'] = null;
         }else{
@@ -75,20 +75,23 @@ class dataGamePlayer
      * @param $player
      * @param $nick
      * @param $team
+     * @param $winner
+
      * @param $kills
      * @param $deaths
-     * set the constructor if game have less params for second game
+     * set the constructor if game have less params for second game(valorant)
      */
-    public function setLinePlayerGameDataB($game, $player, $nick, $team, $kills, $deaths)
+    public function setLinePlayerGameDataB($game, $player, $nick, $team,$winner, $kills, $deaths)
     {
-        $isValid = $this->checkIntegrity($game, $player, $nick, $team, false, 'A', $kills, $deaths);
+        $isValid = $this->checkIntegrity($game, $player, $nick, $team, (bool)$winner,null, (int)$kills, (int)$deaths,null,null,null);
         if($isValid===true) {
             $this->linePlayerGameData['game'] = $game;
             $this->linePlayerGameData['player'] = $player;
             $this->linePlayerGameData['nick'] = $nick;
+            $this->linePlayerGameData['winner'] = (bool)$winner;
             $this->linePlayerGameData['team'] = $team;
-            $this->linePlayerGameData['kills'] = $kills;
-            $this->linePlayerGameData['deaths'] = $deaths;
+            $this->linePlayerGameData['kills'] =(int) $kills;
+            $this->linePlayerGameData['deaths'] =(int) $deaths;
             $this->linePlayerGameData['score'] = null;
         }else{
             echo $isValid;die;
@@ -103,8 +106,7 @@ class dataGamePlayer
      */
     public function calculateScoreByGameAndPlayer()
         {
-
-            if ($this->linePlayerGameData['game'] == 'league') {
+            if ($this->linePlayerGameData !== null && $this->linePlayerGameData['game'] == 'league') {
                 /*
                  * E.g. a player playing as a Mid with 10 kills, 5 deaths and no assists will be granted with 2 KDA points
                  * ((10 + 0) / 5 ).
@@ -123,24 +125,25 @@ class dataGamePlayer
                 if ($this->linePlayerGameData['winner'] == true) {
                     $score += 10;
                 }
-
+                $this->linePlayerGameData['score'] = $score;
                 //echo 'kda->'.$kda.'-DAMAGE'._damageDeal[$this->linePlayerGameData['position']] .'*'.$this->linePlayerGameData['damage'].'='.$damageDeal.
                 //'-----HEAL'._healDeal[$this->linePlayerGameData['position']] .'*'.$this->linePlayerGameData['heal'].'='.$healDeal;
             }else{
-                //valorant
-                $score =$kda =  $this->linePlayerGameData['kills'] / $this->linePlayerGameData['deaths'];
+                if ($this->linePlayerGameData !== null) {
+                    //valorant
+                    $score = $kda = $this->linePlayerGameData['kills'] / $this->linePlayerGameData['deaths'];
+                    if ($this->linePlayerGameData['winner'] == true) {
+                        $score += 10;
+                    }
+                    $this->linePlayerGameData['score'] = $score;
+
+                }
+
             }
-            $this->linePlayerGameData['score'] = $score;
             return $this->linePlayerGameData;
 
         }
 
-    /**
-     *
-     */
-    public function getWinnerValorant(){
-
-    }
 
     /**
      * @param $game
@@ -158,6 +161,7 @@ class dataGamePlayer
      * Return true if check integrity pass ok or error message in string if some failed
      */
     public function checkIntegrity($game, $player, $nick, $team, $winner, $position, $kills, $deaths, $assists, $damage, $heal){
+
 
         if(is_string($game) && !empty($game)){
 
@@ -184,25 +188,25 @@ class dataGamePlayer
             return 'integrity violation : team cannot be empty';
         }
 
-        if(is_int($kills) &&($kills>=0)  ){
+        if(is_int((int)$kills) &&((int)$kills>=0)  ){
 
         }else{
             return 'integrity violation : kills must be integer and must be greater than 0';
         }
 
-        if(is_int($deaths) &&($deaths>=0)  ){
+        if(is_int((int)$deaths) &&((int)$deaths>=0)  ){
 
         }else{
             return 'integrity violation : deaths must be integer and must be greater than 0';
         }
+        if(is_bool((bool)$winner) && ( (bool)$winner==true || (bool)$winner==false) ){
+
+        }else{
+            return 'integrity violation : winner must be a boolean';
+        }
 
         //avoid check values that only avaliable in league of legends
         if($game!='valorant') {
-            if(is_bool($winner)){
-
-            }else{
-                return 'integrity violation : kills must be integer and must be greater than 0';
-            }
 
             if(is_string($position)  && in_array($position,_validTypePlayer) ){
 
@@ -210,19 +214,19 @@ class dataGamePlayer
                 return 'integrity violation : type must be type allowed';
             }
 
-            if (is_int($assists) && ($assists >= 0)) {
+            if (is_int((int)$assists) && ((int)$assists >= 0)) {
 
             } else {
                 return 'integrity violation : assists must be integer and must be greater than 0';
             }
 
-            if (is_int($damage) && ($damage >= 0)) {
+            if (is_int((int)$damage) && ((int)$damage >= 0)) {
 
             } else {
                 return 'integrity violation : damage must be integer and must be greater than 0';
             }
 
-            if (is_int($heal) && ($heal >= 0)) {
+            if (is_int((int)$heal) && ((int)$heal >= 0)) {
 
             } else {
                 return 'integrity violation : heal must be integer and must be greater than 0';
