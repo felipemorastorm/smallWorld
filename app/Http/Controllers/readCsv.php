@@ -23,33 +23,40 @@ class readCsv extends Controller
      */
     public function loadDataFromExcel()
     {
-        //here i put the path to the 2 files that i have , i assume what normally the process would push more files
-        //then this would be done with  scandisk and read file by file
-
-        $pathCsvLeagueOfLegend = resource_path('csvFiles/league_of_legends.csv');
-        $pathCsvValorant = resource_path('csvFiles/valorantGameOk.csv');
-
-        $arrayGames = array('league' => $pathCsvLeagueOfLegend, 'valorant' => $pathCsvValorant);
-
-        $arrayResultGamesByLine = array();
-        $displayInformation = '';
-        foreach ($arrayGames as $key => $path) {
-            $resultsGame = $this->readDataOneGame($path);
-
-            if (is_array($resultsGame)) {
-                $arrayResultGamesByLine[$key] = $resultsGame;
-                $displayInformation .= $key . ' read ok <br>';
+        try {
+            //here i put the path to the 2 files that i have , i assume what normally the process would push more files
+            //then this would be done with  scandisk and read file by file
+            if (isset($_POST['valid']) && $_POST['valid'] == 1) {
+                $pathCsvLeagueOfLegend = resource_path('csvFiles/league_of_legends.csv');
+                $pathCsvValorant = resource_path('csvFiles/valorantGameOk.csv');
             } else {
-                $displayInformation .= $key . ' fail by : ' . $resultsGame . '<br>';
+                $pathCsvLeagueOfLegend = resource_path('csvFiles/league_of_legends.csv');
+                $pathCsvValorant = resource_path('csvFiles/valorant.csv');
             }
 
+            $arrayGames = array('league' => $pathCsvLeagueOfLegend, 'valorant' => $pathCsvValorant);
+
+            $arrayResultGamesByLine = array();
+            $displayInformation = '';
+            foreach ($arrayGames as $key => $path) {
+                $resultsGame = $this->readDataOneGame($path);
+
+                if (is_array($resultsGame)) {
+                    $arrayResultGamesByLine[$key] = $resultsGame;
+                    $displayInformation .= $key . ' read ok <br>';
+                } else {
+                    $displayInformation .= $key . ' fail by : ' . $resultsGame . '<br>';
+                }
+
+            }
+
+            //save data in some part with arrayReply Data, save data for trait separately
+            //(if so many data maybe we need make a cron or organise how we trait data with queue/cron process)
+            //or saving into ddbb results of read lines without validation
+            //in this case simply we are going to save results of read line on cache
+        }catch(Exception $e){
+            echo ($e->getMessage());die;
         }
-
-        //save data in some part with arrayReply Data, save data for trait separately
-        //(if so many data maybe we need make a cron or organise how we trait data with queue/cron process)
-        //or saving into ddbb results of read lines without validation
-        //in this case simply we are going to save results of read line on cache
-
         Cache::put('resultsGameLines', $arrayResultGamesByLine);
 
         echo json_encode($displayInformation);
@@ -202,14 +209,35 @@ class readCsv extends Controller
             }
         }
 
-        //order
-        $col = array_column($playersLeague, "score");
-        array_multisort($col, SORT_DESC, $playersLeague);
-        var_dump($playersLeague);
+        //apply order
+        $playersLeagueNickAndScore = array_column($playersLeague, "score","nick");
+        array_multisort($playersLeagueNickAndScore, SORT_DESC, $playersLeagueNickAndScore);
 
-        $col = array_column($playersValorant, "score");
-        array_multisort($col, SORT_DESC, $playersValorant);
-        var_dump($playersValorant);
+        $playersValorantNickAndScore = array_column($playersValorant, "score","nick");
+        array_multisort($playersValorantNickAndScore, SORT_DESC, $playersValorantNickAndScore);
+
+        $totalRanking = array();
+        foreach ($playersLeagueNickAndScore as $keyNick => $value) {
+            $totalRanking[$keyNick] = $value;
+        }
+        foreach ($playersValorantNickAndScore as $keyNick => $value) {
+            if(isset($totalRanking[$keyNick])){
+                $totalRanking[$keyNick]=$totalRanking[$keyNick] + $value;
+            }else{
+                $totalRanking[$keyNick] = $value;
+            }
+        }
+        asort($totalRanking);
+
+        //encode html message for print
+        $htmlReply = "E-Ranking<br>";
+        $i=1;
+        $position ='position :';
+        foreach($totalRanking as $key=>$value){
+            $htmlReply .=$position.$i.' Nick :'.$key.' Total points :'.$value.'<br>';
+            $i++;
+        }
+        return json_encode($htmlReply);
 
 
     }

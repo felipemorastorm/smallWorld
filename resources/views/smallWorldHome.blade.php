@@ -33,6 +33,8 @@
     </head>
     <body class="antialiased">
         <button id="readCsvButton" type="button" class="btn btn-primary">Read csv</button>
+        <button id="readCsvButtonErrors" type="button" class="btn btn-primary">Read csv(files with errors)</button>
+
         <button id="launchCalcutionButton" type="button" class="btn btn-secondary">Launch calculation</button>
         <input type="hidden" name="readCsvPostRoute" value="{{url("/readCsv")}}">
         <input type="hidden" name="launchCalcutionButton" value="{{url("/launchCalculation")}}">
